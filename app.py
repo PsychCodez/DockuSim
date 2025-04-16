@@ -326,6 +326,37 @@ def load_state():
             all_pods.extend(state.get("all_pods", []))
 
 load_state()
+
+@app.route('/simulate_schedule', methods=['POST'])
+def simulate_schedule():
+    pod_cpu = int(request.form['cpu'])
+    mode = request.form['mode']
+
+    simulated_node = schedule_pod_best_fit(pod_cpu)
+    if not simulated_node:
+        return jsonify({
+            "status": "fail",
+            "message": "No suitable node available for this pod."
+        })
+
+    # Calculate what remaining CPU would look like after this pod
+    remaining_cpu = simulated_node['cpu_cores'] - (simulated_node['used_cpu'] + pod_cpu)
+
+    return jsonify({
+        "status": "success",
+        "node_id": simulated_node['id'],
+        "container_id": simulated_node['container_id'],
+        "current_used_cpu": simulated_node['used_cpu'],
+        "total_cpu": simulated_node['cpu_cores'],
+        "predicted_remaining_cpu": remaining_cpu,
+        "risk_level": (
+            "High" if remaining_cpu == 0 else
+            "Medium" if remaining_cpu < 2 else
+            "Low"
+        ),
+        "mode": mode
+    })
+
 # ---------------------- Run ----------------------
 
 if __name__ == '__main__':
