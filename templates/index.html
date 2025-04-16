@@ -4,21 +4,90 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Node Manager</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .heartbeat-dot {
-            height: 14px;
-            width: 14px;
-            border-radius: 50%;
-            background-color: red;
-            display: inline-block;
-            opacity: 0.4;
-            transition: opacity 0.3s ease;
-        }
-        .heartbeat-active {
-            opacity: 1;
-        }
-    </style>
+<style>
+    body {
+        background: linear-gradient(135deg, #dbeafe, #f0f9ff);
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin-top: 30px;
+    }
+
+    .card {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        border-radius: 12px;
+    }
+
+    .form-control,
+    .form-select {
+        border-radius: 8px;
+    }
+
+    .btn {
+        border-radius: 8px;
+    }
+
+    h2 {
+        font-weight: 700;
+        color: #1e3a8a;
+        margin-bottom: 25px;
+    }
+
+    .table {
+        background-color: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .table th, .table td {
+        vertical-align: middle;
+    }
+
+    .table-dark th {
+        background-color: #1e3a8a !important;
+        color: white;
+    }
+
+    .heartbeat-dot {
+        height: 14px;
+        width: 14px;
+        border-radius: 50%;
+        background-color: red;
+        display: inline-block;
+        opacity: 0.4;
+        transition: opacity 0.3s ease;
+        box-shadow: 0 0 6px rgba(255, 0, 0, 0.4);
+    }
+
+    .heartbeat-active {
+        opacity: 1;
+        box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+    }
+
+    .progress {
+        height: 28px;
+        border-radius: 12px;
+        background-color: #e2e8f0;
+    }
+
+    .progress-bar {
+        font-weight: 500;
+        line-height: 28px;
+        border-radius: 12px;
+    }
+
+    .alert {
+        border-radius: 10px;
+    }
+</style>
     <script>
         function toggleDurationField() {
             const mode = document.querySelector('input[name="mode"]:checked').value;
@@ -58,16 +127,14 @@
                         bar.style.width = percent + '%';
                         bar.textContent = `${totalUsed} / ${totalCpu} CPU (${percent}%)`;
 
-                        // Remove existing color classes
                         bar.classList.remove('bg-success', 'bg-warning', 'bg-danger');
 
-                        // Apply color based on usage
                         if (percent < 60) {
-                                bar.classList.add('bg-success');
+                            bar.classList.add('bg-success');
                         } else if (percent < 80) {
-                                bar.classList.add('bg-warning');
+                            bar.classList.add('bg-warning');
                         } else {
-                                bar.classList.add('bg-danger');
+                            bar.classList.add('bg-danger');
                         }
                     }
                 });
@@ -75,15 +142,47 @@
 
         setInterval(updateHeartbeats, 5000);
         window.onload = updateHeartbeats;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('simulateForm');
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const cpu = document.getElementById('simCpu').value;
+                const mode = document.getElementById('simMode').value;
+
+                fetch('/simulate_schedule', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `cpu=${cpu}&mode=${mode}`
+                })
+                .then(res => res.json())
+                .then(data => {
+                    const resultDiv = document.getElementById('simResult');
+                    if (data.status === 'success') {
+                        resultDiv.innerHTML = `
+                            <div class="alert alert-success shadow-sm">
+                                Pod will be placed on <strong>Node ${data.node_id}</strong> (Container: ${data.container_id}).<br>
+                                <strong>Current Used CPU:</strong> ${data.current_used_cpu} / ${data.total_cpu}<br>
+                                <strong>Post-Simulation Remaining CPU:</strong> ${data.predicted_remaining_cpu}<br>
+                                <strong>Risk Level:</strong> ${data.risk_level}
+                            </div>`;
+                    } else {
+                        resultDiv.innerHTML = `<div class="alert alert-danger shadow-sm">${data.message}</div>`;
+                    }
+                });
+            });
+        });
     </script>
 </head>
 <body>
-    <div class="container mt-4">
-        <h2 class="text-center">Node Manager</h2>
+    <div class="container mt-5 mb-5">
+        <h2 class="text-center">⚙️ Node Manager Dashboard</h2>
 
         <!-- CPU Usage Progress Bar -->
         <div class="mb-4">
-            <h5>Cluster CPU Usage</h5>
+            <h5>📈 Cluster CPU Usage</h5>
             <div class="progress">
                 <div id="cpuUsageBar" class="progress-bar" role="progressbar" style="width: 0%">0%</div>
             </div>
@@ -99,9 +198,9 @@
 
         <!-- Launch Pod Form -->
         <form method="POST" action="/launch_pod" class="mb-4">
-            <div class="card p-3">
-                <h5>Launch Pod</h5>
-                <div class="row mb-2">
+            <div class="card p-4">
+                <h5>🚀 Launch Pod</h5>
+                <div class="row mb-3">
                     <div class="col">
                         <input type="number" name="cpu" class="form-control" placeholder="CPU Required" required>
                     </div>
@@ -116,54 +215,78 @@
                         </div>
                     </div>
                 </div>
-                <div class="row mb-2" id="durationField" style="display: none;">
+                <div class="row mb-3" id="durationField" style="display: none;">
                     <div class="col">
                         <input type="number" name="duration" class="form-control" placeholder="Duration (in seconds)">
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Launch Pod</button>
+                <button type="submit" class="btn btn-primary w-100">Launch Pod</button>
             </div>
         </form>
 
+        <!-- 📊 Pod Advisor -->
+        <div class="card p-4 mb-4">
+            <h5>📊 Pod Advisor (Simulate Scheduling)</h5>
+            <form id="simulateForm">
+                <div class="row mb-3">
+                    <div class="col">
+                        <input type="number" id="simCpu" class="form-control" placeholder="CPU Required" required>
+                    </div>
+                    <div class="col">
+                        <select id="simMode" class="form-select">
+                            <option value="infinite">Infinite</option>
+                            <option value="timed">Timed</option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <button type="submit" class="btn btn-info w-100">Simulate</button>
+                    </div>
+                </div>
+            </form>
+            <div id="simResult" class="mt-2 text-dark"></div>
+        </div>
+
         <!-- Node List Table -->
-        <table class="table table-bordered">
-            <thead class="table-dark">
-                <tr>
-                    <th>Node ID</th>
-                    <th>CPU (Used / Total)</th>
-                    <th>Status</th>
-                    <th>Container ID</th>
-                    <th>Heartbeat</th>
-                    <th>Pods</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for node in nodes %}
-                <tr>
-                    <td>{{ node.id }}</td>
-                    <td>{{ node.used_cpu }} / {{ node.cpu_cores }}</td>
-                    <td>{{ node.status }}</td>
-                    <td>{{ node.container_id }}</td>
-                    <td>
-                        <div>
-                            <span id="heartbeat-dot-{{ node.id }}" class="heartbeat-dot"></span>
-                        </div>
-                        <div>
-                            Count: <span id="heartbeat-count-{{ node.id }}">0</span>
-                        </div>
-                        <div style="font-size: small;">
-                            Last: <span id="heartbeat-time-{{ node.id }}">-</span>
-                        </div>
-                    </td>
-                    <td>
-                        {% for pod in node.pods %}
-                            <div><strong>{{ pod.id }}</strong> ({{ pod.mode }}, {{ pod.cpu }} CPU)</div>
-                        {% endfor %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-bordered shadow-sm">
+                <thead>
+                    <tr>
+                        <th>Node ID</th>
+                        <th>CPU (Used / Total)</th>
+                        <th>Status</th>
+                        <th>Container ID</th>
+                        <th>Heartbeat</th>
+                        <th>Pods</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for node in nodes %}
+                    <tr>
+                        <td>{{ node.id }}</td>
+                        <td>{{ node.used_cpu }} / {{ node.cpu_cores }}</td>
+                        <td>{{ node.status }}</td>
+                        <td>{{ node.container_id }}</td>
+                        <td>
+                            <div>
+                                <span id="heartbeat-dot-{{ node.id }}" class="heartbeat-dot"></span>
+                            </div>
+                            <div>
+                                Count: <span id="heartbeat-count-{{ node.id }}">0</span>
+                            </div>
+                            <div style="font-size: small;">
+                                Last: <span id="heartbeat-time-{{ node.id }}">-</span>
+                            </div>
+                        </td>
+                        <td>
+                            {% for pod in node.pods %}
+                                <div><strong>{{ pod.id }}</strong> ({{ pod.mode }}, {{ pod.cpu }} CPU)</div>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </body>
 </html>
