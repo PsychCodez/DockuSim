@@ -56,26 +56,20 @@ Built using **Flask** and a responsive **Bootstrap 5 UI**, the web dashboard all
 
 **Prerequisites**: Docker, Python 3.8+, pip
 
-### 🔧 Clone the repo
+## 🔧 Clone the repo
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
 cd YOUR_REPO_NAME
 ```
-📦 Install dependencies
-bash
-Copy
-Edit
-pip install -r requirements.txt
-🚀 Run the application
-bash
-Copy
-Edit
+## 🚀 Run the application
+```bash
 python app.py
-🌐 Open in Browser
+```
+## 🌐 Open in Browser
 Visit: http://127.0.0.1:5000
 
-📦 Node Simulation
+## 📦 Node Simulation
 Each time you add a node via the interface:
 
 A new Ubuntu-based Docker container is spun up.
@@ -84,7 +78,7 @@ It runs a shell to simulate an idle node.
 
 It is registered with the cluster along with its CPU allocation.
 
-🧪 Testing and Evaluation Checklist
+## 🧪 Testing and Evaluation Checklist
  Add node functionality
 
  Pod scheduling with CPU resource checks
@@ -97,7 +91,7 @@ It is registered with the cluster along with its CPU allocation.
 
  Pod advisor simulation feature
 
-🔮 Enhancements (Future Scope)
+## 🔮 Enhancements (Future Scope)
  Auto-scaling of nodes based on load
 
  Real-time resource graphs
