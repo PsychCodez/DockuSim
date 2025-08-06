@@ -1,4 +1,4 @@
-# PES2UG22CS193_PES2UG22CS208_PES2UG22CS240_Distributed_System_Cluster
+# DocKuSim
 
 # Distributed Systems Cluster Simulation Framework
 
@@ -99,8 +99,3 @@ It is registered with the cluster along with its CPU allocation.
  Pod networking policies and isolation
 
  CLI client for managing cluster remotely
-
-## ✍️ Author
-G Dhanush R Reddy - PES2UG22CS193
-G Manasa - PES2UG22CS208
-J Raviteja - PES2UG22CS240
